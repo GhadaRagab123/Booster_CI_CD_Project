@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('prepratiom') {
+            steps {
+                git "https://github.com/GhadaRagab123/Booster_CI_CD_Project"
+            }
+        }
+         stage('CI') {
+            steps {
+                   withCredentials([usernamePassword(credentialsId: 'docker_2', passwordVariable: 'mypass', usernameVariable: 'myname')])
+                   {
+                     sh """
+                    docker build . -t ghada/myimage:1.0
+                    docker login --username ${myname} --password ${mypass}
+                    docker push ghada/myimage:1.0
+                    """
+                   }
+            }
+        }
+        
+        stage('CD') {
+            steps {
+                   withCredentials([usernamePassword(credentialsId: 'docker_2', passwordVariable: 'mypass', usernameVariable: 'myname')])
+                   {
+                   
+                   sh """
+                    docker run -d -p 3000:3000 ghada/myimage:1.0
+                    """
+                   }
+                   
+            }
+        }
+    }
+}
